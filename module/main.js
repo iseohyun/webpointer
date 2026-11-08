@@ -21,7 +21,6 @@
       r.renderGrid();
       r.updateSvgDefs();
       r.renderRibbon();
-      setupTabSwitching();
       setupMouseEvents();
       setupKeyboardEvents();
       setupWindowResize();
@@ -43,25 +42,6 @@
     initApp();
   }
 
-  function setupTabSwitching() {
-    var cfg = getCfg();
-    var render = getRender();
-    var tabContainer = document.querySelector('.ribbon-tabs');
-    if (!tabContainer) return;
-    tabContainer.addEventListener('click', function(e) {
-      var tabBtn = e.target.closest('.ribbon-tab');
-      if (!tabBtn) return;
-
-      document.querySelectorAll('.ribbon-tab').forEach(function(b) {
-        b.classList.remove('active');
-      });
-      tabBtn.classList.add('active');
-
-      cfg.currentTab = tabBtn.dataset.tab;
-      render.renderRibbon();
-    });
-  }
-
   function setupMouseEvents() {
     var cfg = getCfg();
     var state = getState();
@@ -81,7 +61,7 @@
       var isEditingActive = (state.typingSvgObj || document.getElementById('hiddenCanvasInput'));
       if (isEditingActive) {
         var clickedEl = e.target;
-        var clickedObj = clickedEl ? clickedEl.closest('circle, line, rect, ellipse, path, text, tspan') : null;
+        var clickedObj = clickedEl ? clickedEl.closest('circle, line, rect, ellipse, path, text, tspan, image') : null;
         if (clickedObj && clickedObj.tagName.toLowerCase() === 'tspan') {
           clickedObj = clickedObj.closest('text');
         }
@@ -237,7 +217,7 @@
         return;
       }
 
-      var targetObj = e.target.closest('circle, line, rect, ellipse, path, text, tspan');
+      var targetObj = e.target.closest('circle, line, rect, ellipse, path, text, tspan, image');
       if (targetObj && targetObj.tagName.toLowerCase() === 'tspan') {
         targetObj = targetObj.closest('text');
       }
@@ -359,7 +339,7 @@
       }
 
       if (cfg.currentTool === 'select' && !state.isDraggingHandle && !state.isDraggingObject) {
-        var hoverTarget = e.target.closest('circle, line, rect, ellipse, path, text, tspan');
+        var hoverTarget = e.target.closest('circle, line, rect, ellipse, path, text, tspan, image');
         if (hoverTarget && hoverTarget.tagName.toLowerCase() === 'tspan') hoverTarget = hoverTarget.closest('text');
         if (hoverTarget && cfg.objectsMap.has(hoverTarget.id)) {
           mainSvg.style.cursor = cfg.selectedIds.has(hoverTarget.id) ? 'move' : 'pointer';
@@ -374,8 +354,8 @@
         var a = state.activeNewObj.attrs;
         var start = state.drawStartCoords;
 
-        var px1 = (start.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
-        var py1 = (start.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
+        var px1 = start.px !== undefined ? start.px : (start.stepX / (cfg.STEPS_X || 480)) * (cfg.SVG_WIDTH || 960);
+        var py1 = start.py !== undefined ? start.py : (start.stepY / (cfg.STEPS_Y || 270)) * (cfg.SVG_HEIGHT || 540);
         var px2 = coords.px;
         var py2 = coords.py;
 
@@ -533,64 +513,6 @@
           a.endAngle = Math.round((angEnd % 360 + 360) % 360);
           var newREnd = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
           a.rx = newREnd; a.ry = newREnd;
-        } else if (hType === 'top_left_orig') {
-          var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
-          var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
-          var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
-          var initMaxX = initialAttrs.x + initialAttrs.width * (1 - (initialAttrs.cropRight || 0));
-          var initMaxY = initialAttrs.y + initialAttrs.height * (1 - (initialAttrs.cropBottom || 0));
-
-          var newVisibleW = Math.max(10, initMaxX - coords.px);
-          var newFullW = Math.round(newVisibleW / cropVisibleWRatio);
-          var isShiftPressed = e.shiftKey;
-
-          a.width = newFullW;
-          a.x = initMaxX - Math.round(newFullW * (1 - (initialAttrs.cropRight || 0)));
-
-          if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
-            var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
-            a.height = Math.round(a.width / aspect);
-            a.y = initMaxY - Math.round(a.height * (1 - (initialAttrs.cropBottom || 0)));
-          } else {
-            var newVisibleH = Math.max(10, initMaxY - coords.py);
-            var newFullH = Math.round(newVisibleH / cropVisibleHRatio);
-            a.height = newFullH;
-            a.y = initMaxY - Math.round(newFullH * (1 - (initialAttrs.cropBottom || 0)));
-          }
-        } else if (hType === 'bottom_right') {
-          var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
-          var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
-          var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
-          var initMinX = initialAttrs.x + initialAttrs.width * (initialAttrs.cropLeft || 0);
-          var initMinY = initialAttrs.y + initialAttrs.height * (initialAttrs.cropTop || 0);
-
-          var newVisibleW = Math.max(10, coords.px - initMinX);
-          var newFullW = Math.round(newVisibleW / cropVisibleWRatio);
-          var isShiftPressed = e.shiftKey;
-
-          a.width = newFullW;
-          a.x = initMinX - Math.round(newFullW * (initialAttrs.cropLeft || 0));
-
-          if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
-            var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
-            a.height = Math.round(a.width / aspect);
-            a.y = initMinY - Math.round(a.height * (initialAttrs.cropTop || 0));
-          } else {
-            var newVisibleH = Math.max(10, coords.py - initMinY);
-            var newFullH = Math.round(newVisibleH / cropVisibleHRatio);
-            a.height = newFullH;
-            a.y = initMinY - Math.round(newFullH * (initialAttrs.cropTop || 0));
-          }
-        } else if (hType === 'corner_rx') {
-          a.rx = Math.max(0, Math.min(a.width / 2, coords.px - a.x));
-        } else if (hType === 'ellipse_center') {
-          a.cx = coords.px; a.cy = coords.py;
-        } else if (hType === 'ellipse_width') {
-          a.rx = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
-        } else if (hType === 'ellipse_height') {
-          a.ry = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
-        } else if (hType === 'ellipse_rotate') {
-          a.angle = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) + 90;
         } else if (hType === 'bez_vertex') {
           if (a.points && a.points[idx]) {
             a.points[idx].px = coords.px;
@@ -771,6 +693,22 @@
       if (state.isDrawingNewObject) {
         state.isDrawingNewObject = false;
         state.activeNewObj = null;
+        if (handlers && handlers.setTool) {
+          handlers.setTool('select');
+        } else {
+          cfg.currentTool = 'select';
+        }
+      }
+      if (state.isMultiBezierActive && state.activeBezierObj && state.bezierPoints && state.bezierPoints.length === 1) {
+        var bCoords = selection.getStepCoords(e);
+        var bStart = state.bezierPoints[0];
+        if (bStart && Math.hypot(bCoords.px - bStart.px, bCoords.py - bStart.py) >= 10) {
+          state.bezierPoints.push(bCoords);
+          var bPathD = bezier.buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool, state.activeBezierObj.attrs.firstCtrl, null, null, state.activeBezierObj.attrs.ctrls3);
+          state.activeBezierObj.attrs.pathD = bPathD;
+          state.activeBezierObj.attrs.points = state.bezierPoints.slice();
+          render.updateElementAttributes(state.activeBezierObj);
+        }
       }
       if (state.isDraggingHandle) {
         state.isDraggingHandle = false;
@@ -842,6 +780,22 @@
     }
 
     mainSvg.addEventListener('dblclick', function(e) {
+      if (state.isMultiBezierActive && bezier) {
+        if (state.bezierPoints && state.bezierPoints.length > 2) {
+          var lastPt = state.bezierPoints[state.bezierPoints.length - 1];
+          var prevPt = state.bezierPoints[state.bezierPoints.length - 2];
+          if (Math.hypot(lastPt.px - prevPt.px, lastPt.py - prevPt.py) < 5) {
+            state.bezierPoints.pop();
+          }
+        }
+        if (bezier.finishMultiBezier) bezier.finishMultiBezier();
+        if (handlers && handlers.setTool) handlers.setTool('select');
+        else cfg.currentTool = 'select';
+        render.renderUI();
+        render.renderRibbon();
+        if (window.pushHistoryState) window.pushHistoryState();
+        return;
+      }
       var targetObj = e.target.closest('text, tspan');
       if (targetObj) {
         if (targetObj.tagName.toLowerCase() === 'tspan') targetObj = targetObj.closest('text');

@@ -66,9 +66,14 @@
           obj.el.setAttribute('preserveAspectRatio', a.preserveAspectRatio);
         }
       }
-      if (a.angle) {
-        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: safeX + (a.width || 100) / 2, y: safeY + (a.height || 100) / 2 };
-        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + center.x + ' ' + center.y + ')');
+      var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: safeX + (a.width || 100) / 2, y: safeY + (a.height || 100) / 2 };
+      var sx = a.flipX ? -1 : 1;
+      var sy = a.flipY ? -1 : 1;
+      var rot = a.angle || 0;
+      if (sx !== 1 || sy !== 1) {
+        obj.el.setAttribute('transform', 'translate(' + center.x + ' ' + center.y + ') rotate(' + rot + ') scale(' + sx + ' ' + sy + ') translate(' + (-center.x) + ' ' + (-center.y) + ')');
+      } else if (rot) {
+        obj.el.setAttribute('transform', 'rotate(' + rot + ' ' + center.x + ' ' + center.y + ')');
       } else {
         obj.el.removeAttribute('transform');
       }
@@ -79,8 +84,13 @@
       obj.el.setAttribute('cy', safeCY);
       obj.el.setAttribute('rx', Math.max(1, (!isNaN(parseFloat(a.rx)) ? parseFloat(a.rx) : 10)));
       obj.el.setAttribute('ry', Math.max(1, (!isNaN(parseFloat(a.ry)) ? parseFloat(a.ry) : 10)));
-      if (a.angle) {
-        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + safeCX + ' ' + safeCY + ')');
+      var sxEl = a.flipX ? -1 : 1;
+      var syEl = a.flipY ? -1 : 1;
+      var rotEl = a.angle || 0;
+      if (sxEl !== 1 || syEl !== 1) {
+        obj.el.setAttribute('transform', 'translate(' + safeCX + ' ' + safeCY + ') rotate(' + rotEl + ') scale(' + sxEl + ' ' + syEl + ') translate(' + (-safeCX) + ' ' + (-safeCY) + ')');
+      } else if (rotEl) {
+        obj.el.setAttribute('transform', 'rotate(' + rotEl + ' ' + safeCX + ' ' + safeCY + ')');
       } else {
         obj.el.removeAttribute('transform');
       }
@@ -364,10 +374,19 @@
       var textBounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
       var textCX = textBounds ? (textBounds.minX + textBounds.maxX) / 2 : a.x;
       var textCY = textBounds ? (textBounds.minY + textBounds.maxY) / 2 : a.y;
-      if (a.angle) {
-        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + textCX + ' ' + textCY + ')');
+      var sxT = a.flipX ? -1 : 1;
+      var syT = a.flipY ? -1 : 1;
+      var rotT = a.angle || 0;
+      if (sxT !== 1 || syT !== 1) {
+        var tTransform = 'translate(' + textCX + ' ' + textCY + ') rotate(' + rotT + ') scale(' + sxT + ' ' + syT + ') translate(' + (-textCX) + ' ' + (-textCY) + ')';
+        obj.el.setAttribute('transform', tTransform);
         if (obj.underlineEl) {
-          obj.underlineEl.setAttribute('transform', 'rotate(' + a.angle + ' ' + textCX + ' ' + textCY + ')');
+          obj.underlineEl.setAttribute('transform', tTransform);
+        }
+      } else if (rotT) {
+        obj.el.setAttribute('transform', 'rotate(' + rotT + ' ' + textCX + ' ' + textCY + ')');
+        if (obj.underlineEl) {
+          obj.underlineEl.setAttribute('transform', 'rotate(' + rotT + ' ' + textCX + ' ' + textCY + ')');
         }
       } else {
         obj.el.removeAttribute('transform');
@@ -726,8 +745,6 @@
       } else if (obj.type === 'line') {
         createHandleNode(a.x1, a.y1, id, 'start', 1, false);
         createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-      } else if (obj.type === 'point') {
-        createHandleNode(a.cx, a.cy, id, 'point_center', 1, false);
       } else if (obj.type === 'arc') {
         createHandleNode(a.cx, a.cy, id, 'ellipse_center', 1, false);
         var rx = a.rx || 30;
@@ -1007,9 +1024,9 @@
   }
 
   function updateSvgDefs() {
-    var defs = document.getElementById('markerDefs');
+    var defs = document.getElementById('svgDefs') || document.getElementById('markerDefs');
     if (!defs) return;
-    defs.innerHTML = '';
+    defs.querySelectorAll('marker[data-auto-marker="true"]').forEach(function(m) { m.remove(); });
 
     ['arrow', 'circle', 'square', 'diamond'].forEach(function(mType) {
       ['start', 'end'].forEach(function(pos) {
@@ -1018,6 +1035,7 @@
 
         var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
         marker.setAttribute('id', 'marker-' + pos + '-' + mType);
+        marker.setAttribute('data-auto-marker', 'true');
         marker.setAttribute('viewBox', '0 0 10 10');
         marker.setAttribute('refX', '5');
         marker.setAttribute('refY', '5');

@@ -412,3 +412,129 @@ body.show-alt-keybinds .webpointer-app .alt-badge {
   r: 6 !important;
   stroke-width: 2.5 !important;
 }
+
+
+/* Palette Swatch Chips */
+.webpointer-app .palette-swatch-chip {
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.webpointer-app .palette-swatch-chip:hover {
+  transform: scale(1.25) !important;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4) !important;
+  z-index: 10 !important;
+}
+
+/* Modal Popup Overlay Styles */
+.palette-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.palette-modal-backdrop.show {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.palette-modal-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 540px;
+  padding: 24px;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid #cbd5e1;
+}
+
+.palette-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+.palette-modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.palette-modal-desc {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.palette-modal-textarea {
+  width: 100%;
+  height: 130px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.palette-modal-textarea:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.palette-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.palette-modal-btn {
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.palette-modal-btn.primary {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.palette-modal-btn.primary:hover {
+  background: #0369a1;
+}
+
+.palette-modal-btn.secondary {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.palette-modal-btn.secondary:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}

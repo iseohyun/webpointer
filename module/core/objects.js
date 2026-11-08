@@ -4,15 +4,15 @@
   var cfg = window.WebpointerConfig;
   var state = window.WebpointerState;
 
-  function createSvgObject(type, stepStart, stepEnd) {
+  function createSvgObject(type, stepStart, stepEnd, extraData) {
     var objectsGroup = document.getElementById('objectsGroup');
     var id = 'obj_' + (cfg.nextId++);
     var el, attrs = {};
 
-    var px1 = (stepStart.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
-    var py1 = (stepStart.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
-    var px2 = (stepEnd.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
-    var py2 = (stepEnd.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
+    var px1 = stepStart.px !== undefined ? stepStart.px : (stepStart.stepX / (cfg.STEPS_X || 480)) * (cfg.SVG_WIDTH || 960);
+    var py1 = stepStart.py !== undefined ? stepStart.py : (stepStart.stepY / (cfg.STEPS_Y || 270)) * (cfg.SVG_HEIGHT || 540);
+    var px2 = stepEnd.px !== undefined ? stepEnd.px : (stepEnd.stepX / (cfg.STEPS_X || 480)) * (cfg.SVG_WIDTH || 960);
+    var py2 = stepEnd.py !== undefined ? stepEnd.py : (stepEnd.stepY / (cfg.STEPS_Y || 270)) * (cfg.SVG_HEIGHT || 540);
 
     if (type === 'point') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -233,10 +233,10 @@
     }
   }
 
-  function rotatePoint(px, py, deg) {
+  function rotatePoint(px, py, deg, customCx, customCy) {
     var rad = deg * (Math.PI / 180);
-    var cx = (cfg.SVG_WIDTH || 960) / 2;
-    var cy = (cfg.SVG_HEIGHT || 540) / 2;
+    var cx = customCx !== undefined ? customCx : (cfg.SVG_WIDTH || 960) / 2;
+    var cy = customCy !== undefined ? customCy : (cfg.SVG_HEIGHT || 540) / 2;
     var dx = px - cx;
     var dy = py - cy;
     return {
@@ -245,48 +245,59 @@
     };
   }
 
-  function rotateObject(obj, deg) {
+  function rotateObject(obj, deg, customCenter) {
     var a = obj.attrs;
+    var c = customCenter || getObjectCenter(obj);
+    var cx = c.x;
+    var cy = c.y;
+
     if (obj.type === 'point') {
-      var pPt = rotatePoint(a.cx, a.cy, deg);
+      var pPt = rotatePoint(a.cx, a.cy, deg, cx, cy);
       a.cx = pPt.x; a.cy = pPt.y;
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
-      var pEl = rotatePoint(a.cx, a.cy, deg);
+      var pEl = rotatePoint(a.cx, a.cy, deg, cx, cy);
       a.cx = pEl.x; a.cy = pEl.y;
-      a.angle = ((a.angle || 0) + deg) % 360;
+      a.angle = Math.round((((a.angle || 0) + deg) % 360 + 360) % 360);
     } else if (obj.type === 'line') {
-      var pL1 = rotatePoint(a.x1, a.y1, deg);
-      var pL2 = rotatePoint(a.x2, a.y2, deg);
+      var pL1 = rotatePoint(a.x1, a.y1, deg, cx, cy);
+      var pL2 = rotatePoint(a.x2, a.y2, deg, cx, cy);
       a.x1 = pL1.x; a.y1 = pL1.y;
       a.x2 = pL2.x; a.y2 = pL2.y;
     } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
-      var rectCenter = { x: a.x + (a.width || 80) / 2, y: a.y + (a.height || 24) / 2 };
-      var pRectC = rotatePoint(rectCenter.x, rectCenter.y, deg);
-      var oldW = a.width || 80;
-      var oldH = a.height || 24;
-      a.width = oldH;
-      a.height = oldW;
-      a.x = pRectC.x - a.width / 2;
-      a.y = pRectC.y - a.height / 2;
+      var rectCenter = getObjectCenter(obj);
+      var pRectC = rotatePoint(rectCenter.x, rectCenter.y, deg, cx, cy);
+      var w = a.width || 80;
+      var h = a.height || 24;
+      a.x = Math.round(pRectC.x - w / 2);
+      a.y = Math.round(pRectC.y - h / 2);
+      a.angle = Math.round((((a.angle || 0) + deg) % 360 + 360) % 360);
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       if (a.points && a.points.length > 0) {
         a.points.forEach(function(pt) {
-          var pRot = rotatePoint(pt.px, pt.py, deg);
+          var pRot = rotatePoint(pt.px, pt.py, deg, cx, cy);
           pt.px = pRot.x; pt.py = pRot.y;
         });
         if (a.firstCtrl) {
-          var pFC = rotatePoint(a.firstCtrl.cx, a.firstCtrl.cy, deg);
+          var pFC = rotatePoint(a.firstCtrl.cx, a.firstCtrl.cy, deg, cx, cy);
           a.firstCtrl.cx = pFC.x; a.firstCtrl.cy = pFC.y;
+        }
+        if (a.ctrls2 && Array.isArray(a.ctrls2)) {
+          a.ctrls2.forEach(function(c2Pt) {
+            if (c2Pt && typeof c2Pt.cx === 'number') {
+              var pC2Split = rotatePoint(c2Pt.cx, c2Pt.cy, deg, cx, cy);
+              c2Pt.cx = pC2Split.x; c2Pt.cy = pC2Split.y;
+            }
+          });
         }
         if (a.ctrls3) {
           a.ctrls3.forEach(function(cp) {
             if (!cp) return;
             if (cp.c1) {
-              var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg);
+              var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg, cx, cy);
               cp.c1.x = pC1.x; cp.c1.y = pC1.y;
             }
             if (cp.c2) {
-              var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg);
+              var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg, cx, cy);
               cp.c2.x = pC2.x; cp.c2.y = pC2.y;
             }
           });
@@ -301,38 +312,79 @@
     }
   }
 
-  function flipObject(obj, dir) {
+  function flipObject(obj, dir, customCenter) {
     var a = obj.attrs;
-    var cx = (cfg.SVG_WIDTH || 960) / 2;
-    var cy = (cfg.SVG_HEIGHT || 540) / 2;
+    var c = customCenter || getObjectCenter(obj);
+    var cx = c.x;
+    var cy = c.y;
 
     if (dir === 'H') {
-      if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') a.cx = 2 * cx - a.cx;
-      else if (obj.type === 'line') { a.x1 = 2 * cx - a.x1; a.x2 = 2 * cx - a.x2; }
-      else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') a.x = 2 * cx - (a.x + (a.width || 80));
-      else if (obj.type === 'bez2' || obj.type === 'bez3') {
-        if (a.points) a.points.forEach(function(pt) { pt.px = 2 * cx - pt.px; });
-        if (a.firstCtrl) a.firstCtrl.cx = 2 * cx - a.firstCtrl.cx;
+      if (obj.type === 'point') {
+        a.cx = Math.round(2 * cx - a.cx);
+      } else if (obj.type === 'ellipse') {
+        a.cx = Math.round(2 * cx - a.cx);
+        a.flipX = !a.flipX;
+      } else if (obj.type === 'arc') {
+        a.cx = Math.round(2 * cx - a.cx);
+        var oldStartH = a.startAngle !== undefined ? a.startAngle : -90;
+        var oldEndH = a.endAngle !== undefined ? a.endAngle : 0;
+        a.startAngle = Math.round(((180 - oldEndH) % 360 + 360) % 360);
+        a.endAngle = Math.round(((180 - oldStartH) % 360 + 360) % 360);
+      } else if (obj.type === 'line') {
+        a.x1 = Math.round(2 * cx - a.x1);
+        a.x2 = Math.round(2 * cx - a.x2);
+      } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
+        var objW = a.width || 80;
+        a.x = Math.round(2 * cx - (a.x + objW));
+        a.flipX = !a.flipX;
+      } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+        if (a.points) a.points.forEach(function(pt) { pt.px = Math.round(2 * cx - pt.px); });
+        if (a.firstCtrl) a.firstCtrl.cx = Math.round(2 * cx - a.firstCtrl.cx);
+        if (a.ctrls2 && Array.isArray(a.ctrls2)) {
+          a.ctrls2.forEach(function(c2Pt) {
+            if (c2Pt && typeof c2Pt.cx === 'number') c2Pt.cx = Math.round(2 * cx - c2Pt.cx);
+          });
+        }
         if (a.ctrls3) a.ctrls3.forEach(function(cp) {
           if (!cp) return;
-          if (cp.c1) cp.c1.x = 2 * cx - cp.c1.x;
-          if (cp.c2) cp.c2.x = 2 * cx - cp.c2.x;
+          if (cp.c1) cp.c1.x = Math.round(2 * cx - cp.c1.x);
+          if (cp.c2) cp.c2.x = Math.round(2 * cx - cp.c2.x);
         });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
           a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
       }
     } else if (dir === 'V') {
-      if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') a.cy = 2 * cy - a.cy;
-      else if (obj.type === 'line') { a.y1 = 2 * cy - a.y1; a.y2 = 2 * cy - a.y2; }
-      else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') a.y = 2 * cy - (a.y + (a.height || 24));
-      else if (obj.type === 'bez2' || obj.type === 'bez3') {
-        if (a.points) a.points.forEach(function(pt) { pt.py = 2 * cy - pt.py; });
-        if (a.firstCtrl) a.firstCtrl.cy = 2 * cy - a.firstCtrl.cy;
+      if (obj.type === 'point') {
+        a.cy = Math.round(2 * cy - a.cy);
+      } else if (obj.type === 'ellipse') {
+        a.cy = Math.round(2 * cy - a.cy);
+        a.flipY = !a.flipY;
+      } else if (obj.type === 'arc') {
+        a.cy = Math.round(2 * cy - a.cy);
+        var oldStartV = a.startAngle !== undefined ? a.startAngle : -90;
+        var oldEndV = a.endAngle !== undefined ? a.endAngle : 0;
+        a.startAngle = Math.round(((-oldEndV) % 360 + 360) % 360);
+        a.endAngle = Math.round(((-oldStartV) % 360 + 360) % 360);
+      } else if (obj.type === 'line') {
+        a.y1 = Math.round(2 * cy - a.y1);
+        a.y2 = Math.round(2 * cy - a.y2);
+      } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
+        var objH = a.height || 24;
+        a.y = Math.round(2 * cy - (a.y + objH));
+        a.flipY = !a.flipY;
+      } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+        if (a.points) a.points.forEach(function(pt) { pt.py = Math.round(2 * cy - pt.py); });
+        if (a.firstCtrl) a.firstCtrl.cy = Math.round(2 * cy - a.firstCtrl.cy);
+        if (a.ctrls2 && Array.isArray(a.ctrls2)) {
+          a.ctrls2.forEach(function(c2Pt) {
+            if (c2Pt && typeof c2Pt.cy === 'number') c2Pt.cy = Math.round(2 * cy - c2Pt.cy);
+          });
+        }
         if (a.ctrls3) a.ctrls3.forEach(function(cp) {
           if (!cp) return;
-          if (cp.c1) cp.c1.y = 2 * cy - cp.c1.y;
-          if (cp.c2) cp.c2.y = 2 * cy - cp.c2.y;
+          if (cp.c1) cp.c1.y = Math.round(2 * cy - cp.c1.y);
+          if (cp.c2) cp.c2.y = Math.round(2 * cy - cp.c2.y);
         });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
           a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);

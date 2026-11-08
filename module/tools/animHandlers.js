@@ -1,23 +1,88 @@
 /**
- * Webpointer SVG SMIL Animation Suite Handler Module
+ * @file module/tools/animHandlers.js
+ * @description SVG SMIL 애니메이션 제어, 위저드 단계 관리 및 프리셋 재생 모듈
  */
 (function(window) {
   'use strict';
 
   var cfg = window.WebpointerConfig;
+  var state = window.WebpointerState;
 
-  function getSelectedObjectsForFilter() {
-    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return [];
+  function getSelectedObjectsForAnim() {
+    if (window.getSelectedObjectsForFilter) {
+      return window.getSelectedObjectsForFilter();
+    }
     var list = [];
-    cfg.selectedIds.forEach(function(id) {
-      var obj = cfg.objectsMap.get(id);
-      if (obj) list.push(obj);
-    });
+    if (cfg.selectedIds && cfg.selectedIds.size > 0) {
+      cfg.selectedIds.forEach(function(id) {
+        var o = cfg.objectsMap.get(id);
+        if (o) list.push(o);
+      });
+    } else {
+      cfg.objectsMap.forEach(function(o) {
+        list.push(o);
+      });
+    }
     return list;
   }
 
+  function setAnimStep(step) {
+    state.animStep = step;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+    if (step === 2) {
+      setTimeout(function() {
+        updateAnimDefaultValues();
+      }, 0);
+    }
+  }
+
+  function updateAnimDefaultValues(attrType) {
+    var select = document.getElementById('animAttrType');
+    var type = attrType || (select ? select.value : 'transform:rotate');
+    var fromInput = document.getElementById('animFrom');
+    var toInput = document.getElementById('animTo');
+    var durInput = document.getElementById('animDur');
+
+    var defaults = {
+      'fill': { from: '#041e49', to: '#ef4444', dur: '2s' },
+      'stroke': { from: '#041e49', to: '#3b82f6', dur: '2s' },
+      'stroke-width': { from: '1', to: '5', dur: '1.5s' },
+      'opacity': { from: '0', to: '1', dur: '1.5s' },
+      'transform:translate': { from: '0 0', to: '50 0', dur: '2s' },
+      'transform:scale': { from: '1', to: '1.5', dur: '1.5s' },
+      'transform:rotate': { from: '0', to: '360', dur: '2s' },
+      'd': { from: '', to: '', dur: '2s' }
+    };
+
+    var d = defaults[type] || { from: '0', to: '100', dur: '2s' };
+    if (fromInput) fromInput.value = d.from;
+    if (toInput) toInput.value = d.to;
+    if (durInput) durInput.value = d.dur;
+  }
+
+  function playSelectedAnimation() {
+    var targets = getSelectedObjectsForAnim();
+    if (targets.length === 0) {
+      playAnimation('rotate');
+      return;
+    }
+    targets.forEach(function(obj) {
+      if (!obj.el) obj.el = document.getElementById(obj.id);
+      if (obj.el) {
+        var anims = obj.el.querySelectorAll('animate, animateTransform, animateMotion');
+        anims.forEach(function(anim) {
+          try {
+            if (anim.beginElement) anim.beginElement();
+          } catch (e) {}
+        });
+      }
+    });
+  }
+
   function removeAllAnimationsFromSelected() {
-    var targets = getSelectedObjectsForFilter();
+    var targets = getSelectedObjectsForAnim();
     if (!targets || targets.length === 0) return;
     targets.forEach(function(obj) {
       if (!obj.el) obj.el = document.getElementById(obj.id);
@@ -32,7 +97,7 @@
   }
 
   function addCustomSmilAnimation() {
-    var targets = getSelectedObjectsForFilter();
+    var targets = getSelectedObjectsForAnim();
     if (!targets || targets.length === 0) return;
 
     var attrType = (document.getElementById('animAttrType') || {}).value || 'fill';
@@ -91,9 +156,11 @@
   }
 
   function playAnimation(type) {
-    var targets = getSelectedObjectsForFilter();
+    var targets = getSelectedObjectsForAnim();
     targets.forEach(function(obj) {
-      if (!obj.el) obj.el = document.getElementById(obj.id);
+      if (!obj.el) {
+        obj.el = document.getElementById(obj.id);
+      }
       if (!obj.el) return;
       var el = obj.el;
       var anims = el.querySelectorAll('animate, animateTransform, animateMotion');
@@ -101,7 +168,7 @@
 
       if (type === 'draw') {
         var len = 1000;
-        try { if (el.getTotalLength) len = Math.ceil(el.getTotalLength()); } catch(e){}
+        try { if (el.getTotalLength) len = Math.ceil(el.getTotalLength()); } catch (e) {}
         el.setAttribute('stroke-dasharray', len);
         var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
         anim.setAttribute('attributeName', 'stroke-dashoffset');
@@ -193,9 +260,21 @@
     anims.forEach(function(a) { a.remove(); });
   }
 
+  window.setAnimStep = setAnimStep;
+  window.updateAnimDefaultValues = updateAnimDefaultValues;
+  window.playSelectedAnimation = playSelectedAnimation;
   window.removeAllAnimationsFromSelected = removeAllAnimationsFromSelected;
   window.addCustomSmilAnimation = addCustomSmilAnimation;
   window.playAnimation = playAnimation;
   window.stopAllAnimations = stopAllAnimations;
 
+  window.WebpointerAnim = {
+    setAnimStep: setAnimStep,
+    updateAnimDefaultValues: updateAnimDefaultValues,
+    playSelectedAnimation: playSelectedAnimation,
+    removeAllAnimationsFromSelected: removeAllAnimationsFromSelected,
+    addCustomSmilAnimation: addCustomSmilAnimation,
+    playAnimation: playAnimation,
+    stopAllAnimations: stopAllAnimations
+  };
 })(window);

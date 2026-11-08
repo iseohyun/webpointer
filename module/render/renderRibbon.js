@@ -4,12 +4,6 @@
   var cfg = window.WebpointerConfig;
   var state = window.WebpointerState;
 
-  var default24Colors = [
-    "#660000", "#660000", "#086600", "#006627", "#002e66", "#000080", "#3a0066", "#660031",
-    "#e44d1b", "#c27800", "#669900", "#00a879", "#009dd1", "#4182fb", "#a760e2", "#d94594",
-    "#ff976b", "#ffbb00", "#aae43f", "#00f5c0", "#00eaff", "#85caff", "#ec99ff", "#ff8fda"
-  ];
-
   function getOutermostGroupEl(el) {
     if (!el) return null;
     var objectsGroup = document.getElementById('objectsGroup');
@@ -430,12 +424,7 @@
       var curFontStyle = cfg.fontStyle || 'normal';
       var curTextAnchor = cfg.textAnchor || 'start';
 
-      var systemFonts = cfg.systemFonts || [
-        "맑은 고딕", "나눔고딕", "나눔명조", "굴림", "돋움", "바탕", "궁서",
-        "Arial", "Calibri", "Comic Sans MS", "Consolas", "Courier New", "Georgia",
-        "Impact", "Segoe UI", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana",
-        "sans-serif", "serif", "monospace"
-      ];
+      var systemFonts = cfg.systemFonts || [];
 
       var fontOptionsStr = systemFonts.map(function(fName) {
         var isSel = (curFontFamily === fName) ? 'selected' : '';
