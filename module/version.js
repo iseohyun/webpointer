@@ -7,7 +7,7 @@
 
     const WebpointerVersion = {
         SEMVER: '1.0.0',
-        BUILD_TAG: '20261108v2',
+        BUILD_TAG: '20261108v3',
         getFullVersion() {
             return `v${this.SEMVER} (${this.BUILD_TAG})`;
         }

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 894" width="960" height="894">
+  <defs>
+    <clipPath id="circleClip">
+      <circle cx="513" cy="447" r="447" />
+    </clipPath>
+    <linearGradient id="webBadgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <filter id="badgeShadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#140a05" flood-opacity="0.42" />
+    </filter>
+  </defs>
+
+  <!-- Background 3-part Circle -->
+  <g clip-path="url(#circleClip)">
+    <!-- Bottom Half (#d35230) -->
+    <rect x="66" y="447" width="894" height="447" fill="#d35230" />
+    <!-- Top-Left Quadrant (#ed6c47) -->
+    <rect x="66" y="0" width="447" height="447" fill="#ed6c47" />
+    <!-- Top-Right Quadrant (#ff8f6b) -->
+    <rect x="513" y="0" width="447" height="447" fill="#ff8f6b" />
+
+    <!-- Layered Soft Shadows behind the P Tile -->
+    <rect x="18" y="180" width="518" height="568" rx="48" fill="#000000" fill-opacity="0.14" />
+    <rect x="10" y="192" width="504" height="532" rx="45" fill="#000000" fill-opacity="0.20" />
+    <rect x="4" y="198" width="494" height="510" rx="42" fill="#000000" fill-opacity="0.22" />
+  </g>
+
+  <!-- Foreground 'P' Rounded Tile (#c74623) -->
+  <rect x="0" y="201" width="491" height="491" rx="41" fill="#c74623" />
+
+  <!-- White 'P' Monogram -->
+  <path d="M 142 308 H 259 C 325 308 365 342 365 399 C 365 458 323 494 256 494 H 196 V 585 H 142 Z M 196 353 V 449 H 250 C 291 449 311 431 311 399 C 311 368 291 353 250 353 Z" fill="#ffffff" />
+
+  <!-- Bottom-Right 'WEB' Capsule Badge -->
+  <g filter="url(#badgeShadow)">
+    <rect x="470" y="620" width="474" height="228" rx="114" fill="url(#webBadgeGrad)" stroke="#ffffff" stroke-width="16" />
+    <text x="707" y="738" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="126" font-weight="800" fill="#022c4d" fill-opacity="0.35" text-anchor="middle" dominant-baseline="central">WEB</text>
+    <text x="707" y="734" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="126" font-weight="800" fill="#ffffff" text-anchor="middle" dominant-baseline="central">WEB</text>
+  </g>
+</svg>
