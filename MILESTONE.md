@@ -1,0 +1,8 @@
+- Bugs
+	- Object Selection: Selection is unreliable and sometimes requires two or three attempts or double-clicking to select.
+	- Handle Manipulation: Dragging handles occasionally fails or stutters during transformation.
+	- Animation Playback: Animation effects added to elements do not play upon playback.
+- Feature Roadmap
+	- Connector Lines: Support for Quick Connectors, Rounded Connectors, Right-Angle Connectors, and Smooth PPT-style Connectors.
+	- Closed Shapes: Automatically terminate drawing and recognize as closed shapes when line or curve endpoints meet the starting point.
+	- Freeform Curves: Toggle next segment between straight line, arc, or curve dynamically using hotkeys during line drawing.

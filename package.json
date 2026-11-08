@@ -1,0 +1,14 @@
+{
+  "name": "webpointer",
+  "version": "0.5.5",
+  "description": "Webpointer Vector CAD Editor E2E Test Suite",
+  "main": "index.html",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0"
+  }
+}

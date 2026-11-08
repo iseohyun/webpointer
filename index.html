@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webpointer Vector CAD Editor - iseohyun.com</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Standard SPC Modular Stylesheet -->
+  <link rel="stylesheet" href="Webpointer.css">
+</head>
+<body>
+  <article>
+    <!-- Wrapper div inside article to ensure class persistence in SPA navigation router -->
+    <div class="webpointer-app">
+      <!-- Inline CSS Fallback for Guaranteed Immediate SPA Frame Rendering -->
+      <style>
+        .webpointer-app {
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          font-size: 16px !important;
+          color: #f8fafc;
+          user-select: none;
+          box-sizing: border-box;
+        }
+        .webpointer-app * { box-sizing: border-box; }
+
+        .webpointer-app .menu-bar {
+          width: 100% !important; background-color: #e2e8f0 !important;
+          border: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important;
+          border-radius: 8px 8px 0 0 !important; padding: 6px 10px 0 10px !important;
+          display: flex !important; flex-direction: row !important; align-items: flex-end !important;
+          gap: 4px !important; margin: 0 !important;
+        }
+        .webpointer-app .tab-btn {
+          padding: 8px 20px !important; font-size: 0.9rem !important; font-weight: 600 !important;
+          color: #475569 !important; background-color: #e2e8f0 !important;
+          border: 1px solid transparent !important; border-bottom: none !important;
+          border-radius: 6px 6px 0 0 !important; cursor: pointer !important;
+          transition: all 0.15s ease !important; position: relative !important; outline: none !important;
+        }
+        .palette-modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 99999; align-items: center; justify-content: center; }
+        .palette-modal-backdrop.show { display: flex !important; visibility: visible !important; opacity: 1 !important; }
+        .webpointer-app .tab-btn:hover { color: #0f172a !important; background-color: #cbd5e1 !important; }
+        .webpointer-app .tab-btn.active {
+          color: #0284c7 !important; background-color: #ffffff !important;
+          border: 1px solid #cbd5e1 !important; border-bottom: 1px solid #ffffff !important;
+          margin-bottom: -1px !important; z-index: 10 !important; font-weight: 700 !important;
+          box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05) !important;
+        }
+        .webpointer-app .ribbon-bar {
+          width: 100% !important; background-color: #ffffff !important; color: #0f172a !important;
+          border: 1px solid #cbd5e1 !important; border-top: 1px solid #cbd5e1 !important;
+          border-radius: 0 0 8px 8px !important; padding: 10px 16px !important;
+          min-height: 145px !important; display: flex !important; flex-direction: row !important;
+          align-items: stretch !important; flex-wrap: nowrap !important; gap: 0 !important;
+          overflow-x: auto !important; position: relative !important; z-index: 5 !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; margin: 0 !important;
+        }
+        .webpointer-app .ribbon-category {
+          display: flex !important; flex-direction: column !important; justify-content: space-between !important;
+          padding-right: 16px !important; margin-right: 16px !important; border-right: 1px solid #e2e8f0 !important;
+          position: relative !important; flex-shrink: 0 !important;
+        }
+        .webpointer-app .ribbon-category:last-child { border-right: none !important; padding-right: 0 !important; margin-right: 0 !important; }
+        .webpointer-app .category-grid {
+          display: grid !important; grid-template-rows: repeat(3, 34px) !important; gap: 4px !important; align-items: center !important;
+        }
+        .webpointer-app .category-title {
+          font-size: 0.74rem !important; font-weight: 600 !important; color: #64748b !important;
+          text-align: center !important; margin-top: auto !important; padding-top: 6px !important;
+          letter-spacing: 0.02em !important; white-space: nowrap !important;
+        }
+        .webpointer-app .tool-btn {
+          position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important;
+          width: 34px !important; height: 34px !important; min-width: 34px !important; min-height: 34px !important;
+          max-width: 34px !important; max-height: 34px !important; padding: 0 !important; margin: 0 !important;
+          background-color: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important;
+          color: #334155 !important; cursor: pointer !important; transition: all 0.15s ease !important; box-sizing: border-box !important;
+        }
+        .webpointer-app .tool-btn:hover { background-color: #e2e8f0 !important; border-color: #0284c7 !important; color: #0284c7 !important; }
+        .webpointer-app .tool-btn.active {
+          background-color: #0284c7 !important; border-color: #0284c7 !important; color: #ffffff !important;
+          box-shadow: 0 0 6px rgba(2, 132, 199, 0.4) !important;
+        }
+        .webpointer-app .tool-btn svg {
+          width: 20px !important; height: 20px !important; fill: none !important; stroke: currentColor !important;
+          stroke-width: 1.8 !important; stroke-linecap: round !important; stroke-linejoin: round !important; pointer-events: none !important;
+        }
+        .webpointer-app .tool-btn .tooltip-text {
+          display: none !important; position: absolute !important; top: 100% !important; left: 50% !important;
+          transform: translateX(-50%) !important; margin-top: 6px !important; padding: 4px 8px !important;
+          background: #0f172a !important; border: 1px solid #0284c7 !important; color: #ffffff !important;
+          font-size: 0.72rem !important; font-weight: 500 !important; white-space: nowrap !important;
+          border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important; z-index: 300 !important; pointer-events: none !important;
+        }
+        .webpointer-app .tool-btn:hover .tooltip-text,
+        body.show-alt-keybinds .webpointer-app .tool-btn .tooltip-text { display: block !important; }
+        .webpointer-app .alt-badge {
+          display: none !important; position: absolute !important; top: -4px !important; right: -4px !important;
+          background: #ea4335 !important; color: white !important; font-size: 9px !important; font-weight: 800 !important;
+          border-radius: 50% !important; width: 14px !important; height: 14px !important; line-height: 14px !important;
+          text-align: center !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; z-index: 310 !important;
+        }
+        body.show-alt-keybinds .webpointer-app .alt-badge { display: block !important; }
+        .webpointer-app .ribbon-control-item { display: flex !important; align-items: center !important; gap: 6px !important; font-size: 0.8rem !important; height: 34px !important; }
+        .webpointer-app .ribbon-control-item label { color: #475569 !important; font-size: 0.8rem !important; font-weight: 500 !important; white-space: nowrap !important; }
+        .webpointer-app .ribbon-control-item select, 
+        .webpointer-app .ribbon-control-item input[type="color"],
+        .webpointer-app .ribbon-control-item input[type="number"] {
+          padding: 4px 6px !important; background: #ffffff !important; border: 1px solid #cbd5e1 !important;
+          border-radius: 4px !important; color: #0f172a !important; font-size: 0.8rem !important; outline: none !important;
+        }
+        .webpointer-app .palette-swatch-chip {
+          transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+        }
+        .webpointer-app .palette-swatch-chip:hover {
+          transform: scale(1.25) !important;
+          box-shadow: 0 0 6px rgba(0,0,0,0.4) !important;
+          z-index: 10 !important;
+        }
+        .webpointer-app .content-area { display: block !important; width: 100% !important; }
+        .webpointer-app .handle-node { cursor: pointer !important; transition: r 0.15s ease !important; }
+        .webpointer-app .handle-node:hover { r: 6 !important; stroke-width: 2.5 !important; }
+
+        /* Palette Modal Popup Overlay Styles */
+        .palette-modal-backdrop {
+          position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+          background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);
+          display: none; align-items: center; justify-content: center;
+          z-index: 99999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .palette-modal-backdrop.show { display: flex !important; }
+        .palette-modal-card {
+          background: #ffffff !important; color: #0f172a !important; border-radius: 12px;
+          width: 90%; max-width: 540px; padding: 24px; box-shadow: 0 20px 35px rgba(0,0,0,0.35);
+          display: flex; flex-direction: column; gap: 14px; border: 1px solid #cbd5e1;
+        }
+        .palette-modal-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .palette-modal-title { font-size: 1.1rem; font-weight: 700; color: #0284c7; display: flex; align-items: center; gap: 8px; }
+        .palette-modal-desc { font-size: 0.85rem; color: #475569; line-height: 1.4; }
+        .palette-modal-textarea {
+          width: 100%; height: 130px; padding: 10px; font-family: monospace; font-size: 0.82rem;
+          border: 1px solid #cbd5e1; border-radius: 8px; outline: none; resize: vertical; color: #0f172a; background: #f8fafc;
+        }
+        .palette-modal-textarea:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+        .palette-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+        .palette-modal-btn {
+          padding: 8px 18px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: none; transition: all 0.15s ease;
+        }
+        .palette-modal-btn.primary { background: #0284c7; color: #ffffff; }
+        .palette-modal-btn.primary:hover { background: #0369a1; }
+        .palette-modal-btn.secondary { background: #e2e8f0; color: #475569; }
+        .palette-modal-btn.secondary:hover { background: #cbd5e1; color: #0f172a; }
+      </style>
+
+      <!-- Standard SPC Error Console Component -->
+      <div id="error-console" style="color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; margin-bottom: 12px; border-radius: 8px; font-family: monospace; display: none; font-size: 0.9rem; line-height: 1.4;"></div>
+      <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+          const consoleDiv = document.getElementById("error-console");
+          if (consoleDiv) {
+            consoleDiv.style.display = "block";
+            consoleDiv.innerHTML += `<div><strong>JS Error:</strong> ${message} <br><small>at ${source}:${lineno}:${colno}</small></div>`;
+          }
+          return false;
+        };
+      </script>
+
+
+
+      <!-- === Menu Bar (Gray Background, Width 100%) === -->
+      <div class="menu-bar">
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('file')">파일</button>
+        <button class="tab-btn active" onclick="if(typeof switchTab==='function')switchTab('insert')">삽입</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('style')">그림 서식</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('text')">글 서식</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('anim')">애니메이션</button>
+        <button class="tab-btn tab-align-right" onclick="if(typeof switchTab==='function')switchTab('view')">설정</button>
+      </div>
+
+      <!-- === Ribbon Bar (White Background, Width 100%, Horizontal Categories) === -->
+      <div class="ribbon-bar" id="ribbonBar">
+        <!-- Injected dynamically via JS -->
+      </div>
+
+      <!-- Content Area: SVG Canvas -->
+      <div class="content-area">
+        <div class="svg-wrapper" id="svgWrapper" style="position: relative;">
+          <!-- Canvas File Drag & Drop Highlight Overlay -->
+          <div id="canvasDropOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 132, 199, 0.12); border: 3px dashed #0284c7; border-radius: 8px; z-index: 9999; align-items: center; justify-content: center; pointer-events: none;">
+            <div style="background: #ffffff; padding: 16px 28px; border-radius: 12px; box-shadow: 0 10px 30px rgba(2, 132, 199, 0.3); border: 2px solid #0284c7; text-align: center; color: #0284c7; font-weight: 700; font-size: 1.05rem; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span style="font-size: 1.8rem;">📥</span>
+              <span>드롭하여 파일 로드 / 프로젝트 복원</span>
+              <span style="font-size: 0.78rem; font-weight: 500; color: #64748b;">지원 포맷: .json 프로젝트, .svg 벡터, .png/.jpg 이미지</span>
+            </div>
+          </div>
+
+          <svg id="mainSvg" viewBox="0 0 960 540">
+            <defs id="svgDefs"></defs>
+            <!-- Grid Layer -->
+            <g id="gridGroup"></g>
+            <!-- User Objects & Groups Layer -->
+            <g id="objectsGroup"></g>
+            <!-- Selection, Marquee & Control Handles Layer -->
+            <g id="uiGroup"></g>
+            <!-- Alignment Snap Guides Layer -->
+            <g id="snapGuidesGroup"></g>
+          </svg>
+          <div class="canvas-resize-handle" id="canvasResizeHandle" title="드래그하여 캔버스 세로 높이 조절 (Canvas Height Resize)">
+            <span class="handle-grip">═══ 캔버스 세로 높이 조절 (Resize Height) ═══</span>
+          </div>
+        </div>
+      </div>
+
+
+    <!-- Palette Import Modal Backdrop -->
+    <div class="palette-modal-backdrop" id="paletteModal" onclick="if(event.target===this)closePaletteModal()">
+      <div class="palette-modal-card">
+        <div class="palette-modal-header">
+          <div class="palette-modal-title">🎨 기본 색상 가져오기 (UniPalette 연동)</div>
+        </div>
+        <div class="palette-modal-desc">
+          UniPalette에서 클립보드로 복사한 코드(예: <code>const colorPalette = ["#2AA314", ...];</code>)를 아래 상자에 붙여넣고 [변경]을 클릭하세요. (최대 32개까지 순차 등록됩니다)
+        </div>
+        <textarea class="palette-modal-textarea" id="paletteTextarea" placeholder='const colorPalette = [&#10;  "#2AA314", "#14A36A", "#1471A3", "#2314A3", "#8E14A3", "#A3144D", "#A34614", "#95A314"&#10;];'></textarea>
+        <div class="palette-modal-actions">
+          <button class="palette-modal-btn secondary" onclick="closePaletteModal()">취소</button>
+          <button class="palette-modal-btn primary" onclick="applyImportedPalette()">변경</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shortcut Guidance Modal Backdrop -->
+    <div class="palette-modal-backdrop" id="shortcutModal" onclick="if(event.target===this)closeShortcutModal()">
+      <div class="palette-modal-card" style="max-width: 560px;">
+        <div class="palette-modal-header">
+          <div class="palette-modal-title">⌨️ Webpointer 단축키 안내</div>
+        </div>
+        <div class="palette-modal-desc">
+          Webpointer에서 사용할 수 있는 전체 키보드 단축키 목록입니다.
+        </div>
+        <div style="max-height: 280px; overflow-y: auto; font-size: 0.85rem; color: #334155; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 2px solid #cbd5e1; background: #f8fafc; color: #0284c7;">
+                <th style="padding: 6px 8px;">단축키</th>
+                <th style="padding: 6px 8px;">기능 설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">V</td><td style="padding: 6px 8px;">선택 도구 (Select)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">T</td><td style="padding: 6px 8px;">텍스트 도구 (Text)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">P</td><td style="padding: 6px 8px;">점 도구 (Point)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">L</td><td style="padding: 6px 8px;">직선 도구 (Line)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">R</td><td style="padding: 6px 8px;">직사각형 도구 (Rectangle)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Ctrl + Z</td><td style="padding: 6px 8px;">실행 취소 (Undo)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Ctrl + Y / Ctrl + Shift + Z</td><td style="padding: 6px 8px;">다시 실행 (Redo)</td></tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Delete / Backspace</td><td style="padding: 6px 8px;">선택한 도형 삭제</td></tr>
+              <tr><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Shift (드래그 중)</td><td style="padding: 6px 8px;">45도 스냅 및 정정사각형/정원 생성</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="palette-modal-actions">
+          <button class="palette-modal-btn primary" onclick="closeShortcutModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Settings Modal Backdrop -->
+    <div class="palette-modal-backdrop" id="detailedSettingsModal" onclick="if(event.target===this)closeDetailedSettingsModal()">
+      <div class="palette-modal-card" style="max-width: 440px;">
+        <div class="palette-modal-header">
+          <div class="palette-modal-title">⚙️ Webpointer 세부 설정</div>
+        </div>
+        <div class="palette-modal-desc">
+          Webpointer 편집기의 세부 환경설정을 변경합니다.
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem; color: #334155;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingEnableSnapping" style="font-weight: 600;">🧲 자석 기능 (스냅 활성화):</label>
+            <input type="checkbox" id="settingEnableSnapping" checked style="width: 18px; height: 18px; cursor: pointer;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingSnappingThreshold" style="font-weight: 600;">자석 스냅 흡착 거리 (px):</label>
+            <input type="number" id="settingSnappingThreshold" min="1" max="50" value="12" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingProximityThreshold" style="font-weight: 600;">근접 선택 거리 (px):</label>
+            <input type="number" id="settingProximityThreshold" min="0" max="100" value="12" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingDefaultShapeSize" style="font-weight: 600;">기본 도형 크기 (px):</label>
+            <input type="number" id="settingDefaultShapeSize" min="10" max="500" value="100" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingAlphaStepCount" style="font-weight: 600;">투명도 조절 단계 수:</label>
+            <input type="number" id="settingAlphaStepCount" min="2" max="100" value="5" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingLongPressDelay" style="font-weight: 600;">길게 누르기(롱프레스) 시간 (ms):</label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="range" id="settingLongPressDelay" min="200" max="1000" step="50" value="200" style="width: 100px; cursor: pointer;" oninput="document.getElementById('settingLongPressVal').innerText = this.value + 'ms'">
+              <span id="settingLongPressVal" style="font-weight: 700; width: 50px; text-align: right; color:#0284c7;">200ms</span>
+            </div>
+          </div>
+        </div>
+        <div class="palette-modal-actions" style="margin-top: 10px;">
+          <button class="palette-modal-btn secondary" onclick="closeDetailedSettingsModal()">취소</button>
+          <button class="palette-modal-btn primary" onclick="applyDetailedSettings()">적용</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Symbol Manager Modal -->
+    <div class="palette-modal-backdrop" id="symbolManagerModal" onclick="if(event.target===this)closeSymbolManagerModal()">
+      <div class="palette-modal-content" style="background: #ffffff !important; color: #0f172a !important; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; width: 440px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+          <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 700;">📂 심볼 관리자 (Symbol Manager)</h3>
+          <button onclick="closeSymbolManagerModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">✕</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: #64748b;">등록된 심볼 리스트 (썸네일 - 이름)</span>
+          <button class="palette-modal-btn primary" onclick="importSymbolFromFile()" style="padding: 6px 12px; font-size: 0.82rem;">➕ "불러오기"</button>
+        </div>
+        <div id="symbolListContainer" style="flex: 1; overflow-y: auto; max-height: 280px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #f8fafc;">
+          <!-- Dynamically populated symbol cards -->
+        </div>
+        <div class="palette-modal-actions" style="margin-top: 5px;">
+          <button class="palette-modal-btn secondary" onclick="closeSymbolManagerModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image / Symbol Picker Modal for Insertion -->
+    <div class="palette-modal-backdrop" id="imageSymbolPickerModal" onclick="if(event.target===this)closeImageSymbolPickerModal()">
+      <div class="palette-modal-content" style="width: 540px; max-width: 92vw; padding: 20px; border-radius: 12px; background: #ffffff; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+          <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px;">🖼️ 그림/심볼 선택 및 캔버스 중앙 삽입</h3>
+          <button onclick="closeImageSymbolPickerModal()" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #64748b; font-weight: 700;">✕</button>
+        </div>
+        <div style="font-size: 0.84rem; color: #475569; margin-bottom: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+          💡 원하는 그림/심볼을 클릭하면 캔버스 <b>화면 정중앙에 즉시 배치</b>되고, <b>확대/축소 변형 조종점(Transform Handles)이 켜진 상태로 대기</b>합니다.
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">선택 가능한 심볼 라이브러리</span>
+          <button class="palette-modal-btn primary" onclick="importSymbolFromFile()" style="padding: 5px 12px; font-size: 0.8rem; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">➕ 파일에서 새 심볼 불러오기</button>
+        </div>
+        <div id="imageSymbolPickerGridContainer" style="flex: 1; overflow-y: auto; max-height: 320px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc;">
+          <!-- Dynamically rendered builtin & custom symbol cards -->
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+          <button class="palette-modal-btn secondary" onclick="closeImageSymbolPickerModal()" style="padding: 6px 16px; font-size: 0.85rem;">취소 / 닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Symbol Cookie-Cutter Clip Popover -->
+    <div class="filter-popover" id="symbolClipPopover" style="display:none; width: 320px;">
+      <div class="popover-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-weight:700; color:#0284c7;">🔪 오리기 (심볼 쿠키커터)</span>
+        <button onclick="closeSymbolClipPopover()" style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:#64748b;">✕</button>
+      </div>
+      <div style="font-size:0.78rem; color:#475569; margin-bottom: 10px;">
+        선택한 객체를 등록된 심볼 모양으로 오려냅니다 (비파괴 clipPath).
+      </div>
+      <div id="popSymbolClipGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; max-height:180px; overflow-y:auto; padding:6px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px;">
+        <!-- Dynamically rendered symbol thumbnails -->
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+        <button class="palette-modal-btn secondary" style="padding:4px 10px; font-size:0.78rem;" onclick="removeSymbolClipFromSelected()">오리기 해제</button>
+        <button class="palette-modal-btn secondary" style="padding:4px 10px; font-size:0.78rem;" onclick="closeSymbolClipPopover()">닫기</button>
+      </div>
+    </div>
+
+    <!-- File Slots Modal (Unlimited Vertical Save Slots) -->
+    <div class="palette-modal-backdrop" id="fileSlotsModal" onclick="if(event.target===this)closeFileSlotsModal()">
+      <div class="palette-modal-content" style="background: #ffffff !important; color: #0f172a !important; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; width: 680px; max-width: 95vw; max-height: 88vh; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+          <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 700;">💾 임시 저장 슬롯 관리자 (무제한 확장)</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button onclick="addNewFileSlot()" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.82rem; font-weight:700; cursor:pointer;">➕ 새 슬롯 추가</button>
+            <button onclick="closeFileSlotsModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">✕</button>
+          </div>
+        </div>
+        <div style="font-size: 0.85rem; color: #64748b;">
+          슬롯은 무제한으로 확장할 수 있으며 세로 리스트 형태로 저장하기, 불러오기, 이름바꾸기, 삭제하기 기능이 제공됩니다.
+        </div>
+        <div id="fileSlotsContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto; padding: 4px;">
+          <!-- Dynamically populated vertical slot cards -->
+        </div>
+        <div class="palette-modal-actions" style="margin-top: 5px;">
+          <button class="palette-modal-btn secondary" onclick="closeFileSlotsModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas Defense Modal (File Import Warning) -->
+    <div class="palette-modal-backdrop" id="canvasDefenseModal" onclick="if(event.target===this)closeCanvasDefenseModal()">
+      <div class="palette-modal-card" style="max-width: 480px;">
+        <div class="palette-modal-header">
+          <div class="palette-modal-title" style="color: #d97706;">⚠️ 파일 불러오기 방어 - 현재 캔버스 보호</div>
+        </div>
+        <div class="palette-modal-desc" id="canvasDefenseDesc">
+          현재 캔버스에 그림 객체가 작성되어 있습니다. 새 파일을 불러오기 전에 현재 캔버스를 어떻게 처리하시겠습니까?
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+          <button class="palette-modal-btn primary" id="defenseSaveBtn" onclick="autoSaveCurrentCanvasAndProceedOpen()" style="padding: 10px; font-weight: 700;">💾 슬롯에 자동 저장 후 파일 열기</button>
+          <button class="palette-modal-btn secondary" id="defenseDiscardBtn" onclick="discardCanvasAndProceedOpen()" style="padding: 8px; color: #ef4444; border-color: #fca5a5;">🗑️ 현재 캔버스 작업 버리고 열기</button>
+          <button class="palette-modal-btn secondary" id="defenseCancelBtn" onclick="closeCanvasDefenseModal()" style="padding: 8px;">취소</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slot Overwrite Selection Modal (When all 3 slots full) -->
+    <div class="palette-modal-backdrop" id="slotSelectionModal" onclick="if(event.target===this)closeSlotSelectionModal()">
+      <div class="palette-modal-card" style="max-width: 520px;">
+        <div class="palette-modal-header">
+          <div class="palette-modal-title">📌 덮어쓸 자동 저장 슬롯 선택</div>
+        </div>
+        <div class="palette-modal-desc">
+          모든 3개 임시 저장 슬롯이 채워져 있습니다. 현재 캔버스를 어느 슬롯에 덮어쓰고 저장하시겠습니까?
+        </div>
+        <div id="slotSelectionButtons" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+          <!-- Dynamically populated Slot Overwrite option buttons -->
+        </div>
+        <div class="palette-modal-actions" style="margin-top: 10px;">
+          <button class="palette-modal-btn secondary" onclick="closeSlotSelectionModal()">취소</button>
+        </div>
+      </div>
+  </article>
+
+  <!-- Standard SPC Modular JS Layer -->
+  <script src="module/config.js"></script>
+  <script src="module/core/storageManager.js"></script>
+  <script src="module/core/objects.js"></script>
+  <script src="module/core/selection.js"></script>
+  <script src="module/core/bezier.js"></script>
+  <script src="module/tools/textTool.js"></script>
+  <script src="module/tools/svgImporter.js"></script>
+  <script src="module/tools/clipboard.js"></script>
+  <script src="module/tools/animHandlers.js"></script>
+  <script src="module/tools/ribbonHandlers.js"></script>
+  <script src="module/render/renderCanvas.js"></script>
+  <script src="module/render/icons.js"></script>
+  <script src="module/render/renderRibbon.js"></script>
+  <script src="module/render.js"></script>
+  <script src="module/main.js"></script>
+</body>
+</html>

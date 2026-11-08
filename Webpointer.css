@@ -1,0 +1,414 @@
+/* ==========================================================================
+   Webpointer Vector CAD Editor - Scoped Component Styles
+   Enforces strict CSS container isolation for SPA Host compatibility.
+   ========================================================================== */
+
+/* Main Container Scoped Layout */
+.webpointer-app {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px !important;
+  color: #f8fafc;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.webpointer-app * {
+  box-sizing: border-box;
+}
+
+
+
+/* === Menu Bar (Gray Background, Width 100%) === */
+.webpointer-app .menu-bar {
+  width: 100% !important;
+  background-color: #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  border-radius: 8px 8px 0 0 !important;
+  padding: 6px 10px 0 10px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  gap: 4px !important;
+  margin: 0 !important;
+}
+
+.webpointer-app .menu-bar + .ribbon-bar {
+  margin-top: -10px !important;
+}
+
+/* Menu Tab Buttons */
+.webpointer-app .tab-btn {
+  padding: 8px 20px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  background-color: #e2e8f0 !important;
+  border: 1px solid transparent !important;
+  border-bottom: none !important;
+  border-radius: 6px 6px 0 0 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  position: relative !important;
+  outline: none !important;
+}
+
+.webpointer-app .tab-btn.tab-align-right {
+  margin-left: auto !important;
+}
+
+.webpointer-app .tab-btn:hover {
+  color: #0f172a !important;
+  background-color: #cbd5e1 !important;
+}
+
+/* Selected Active Tab (White Background, Seamless Ribbon Connection) */
+.webpointer-app .tab-btn.active {
+  color: #0284c7 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-bottom: 1px solid #ffffff !important;
+  margin-bottom: -1px !important;
+  z-index: 10 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* === Ribbon Bar (White Background, Width 100%, Horizontal Categories) === */
+.webpointer-app .ribbon-bar {
+  width: 100% !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-top: 1px solid #cbd5e1 !important;
+  border-radius: 0 0 8px 8px !important;
+  padding: 10px 16px !important;
+  min-height: 145px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 100 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  margin: 0 !important;
+}
+
+/* Category DIV (Left to Right Alignment) */
+.webpointer-app .ribbon-category {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 16px;
+  margin-right: 16px;
+  border-right: 1px solid #e2e8f0;
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+}
+
+.webpointer-app .ribbon-category:last-child {
+  border-right: none;
+  padding-right: 0;
+  margin-right: 0;
+}
+
+/* Category 3-Row Grid (3 Rows Max per Column, Left to Right Flow) */
+.webpointer-app .category-grid {
+  display: grid;
+  grid-template-rows: repeat(3, 34px);
+  grid-auto-flow: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+/* Category Content (Icon Group Pinned to Very Top) */
+.webpointer-app .category-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-top: 0;
+  padding-top: 0;
+  flex-grow: 1;
+  opacity: 1;
+  max-height: 500px;
+  overflow: visible;
+  transition: opacity 0.25s ease, max-height 0.3s ease, transform 0.25s ease;
+}
+
+/* Category Title (Centered at Bottom, Collapsible Click Target) */
+.webpointer-app .category-title {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: 0;
+  padding-top: 4px;
+  padding-bottom: 2px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.webpointer-app .category-title:hover {
+  color: #0284c7;
+}
+
+/* Smooth Collapsed Category State */
+.webpointer-app .ribbon-category.collapsed {
+  justify-content: center;
+  align-items: center;
+  padding: 0 2px;
+  margin-right: 8px;
+  border-right: 1px solid #e2e8f0;
+  min-width: 32px;
+  width: 32px;
+  height: 125px;
+  max-height: 125px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.webpointer-app .ribbon-category.collapsed .category-content {
+  opacity: 0;
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  margin: 0;
+  padding: 0;
+  transform: scale(0.95);
+}
+
+.webpointer-app .ribbon-category.collapsed .category-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: 8px 2px;
+  height: 125px;
+  max-height: 125px;
+  width: 32px;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  color: #0369a1;
+  font-size: 0.75rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.webpointer-app .ribbon-category.collapsed .category-title:hover {
+  background-color: #e0f2fe;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.webpointer-app .ribbon-category.collapsed .title-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(0deg);
+  white-space: nowrap;
+  max-height: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 1px;
+  font-weight: 600;
+  transition: opacity 0.3s ease;
+}
+
+.webpointer-app .ribbon-category.collapsed .toggle-icon {
+  margin-top: auto;
+  font-size: 0.7rem;
+  color: #0284c7;
+  padding-bottom: 2px;
+}
+
+/* Uniform Square Tool Buttons */
+.webpointer-app .tool-btn {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  max-width: 34px !important;
+  max-height: 34px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+.webpointer-app .tool-btn:hover {
+  background-color: #e2e8f0 !important;
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+  z-index: 1000 !important;
+}
+
+.webpointer-app .tool-btn.active {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 6px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* Uniform SVG Icon Dimensions (20x20 Display) */
+.webpointer-app .tool-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  pointer-events: none !important;
+}
+
+/* Tooltip Elements (Handled via Global Fixed Floating Tooltip Manager) */
+.webpointer-app .tool-btn .tooltip-text {
+  display: none !important;
+}
+
+/* Alt Keybind Badge */
+.webpointer-app .alt-badge {
+  display: none !important;
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  background: #ea4335 !important;
+  color: white !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  border-radius: 50% !important;
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 14px !important;
+  text-align: center !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+  z-index: 310 !important;
+}
+
+body.show-alt-keybinds .webpointer-app .alt-badge {
+  display: block !important;
+}
+
+.webpointer-app .ribbon-control-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.8rem !important;
+  height: 34px !important;
+}
+
+.webpointer-app .ribbon-control-item label {
+  color: #475569 !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+}
+
+.webpointer-app .ribbon-control-item select, 
+.webpointer-app .ribbon-control-item input[type="color"],
+.webpointer-app .ribbon-control-item input[type="number"] {
+  padding: 4px 6px !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  color: #0f172a !important;
+  font-size: 0.8rem !important;
+  outline: none !important;
+}
+
+/* Content Area: SVG Canvas */
+.webpointer-app .content-area {
+  display: block !important;
+  width: 100% !important;
+}
+
+.webpointer-app .svg-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 960px !important;
+  margin: 0 auto !important;
+  background: #020617 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.webpointer-app svg#mainSvg {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+
+.webpointer-app .canvas-resize-handle {
+  width: 100% !important;
+  height: 20px !important;
+  background: #0f172a !important;
+  border-top: 1px solid #334155 !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: ns-resize !important;
+  user-select: none !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
+}
+
+.webpointer-app .canvas-resize-handle:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+@keyframes caretBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.webpointer-app .blinking-caret {
+  animation: caretBlink 0.85s infinite !important;
+}
+
+/* Control Handles styling */
+.webpointer-app .handle-node {
+  cursor: pointer !important;
+  transition: r 0.15s ease !important;
+}
+
+.webpointer-app .handle-node:hover {
+  r: 6 !important;
+  stroke-width: 2.5 !important;
+}
